@@ -117,6 +117,7 @@
 /**
 * Working Method
 *
+* use 'required' and 'email' classes to validate your inputes.
 ***/
 /*
 //#b_form is the form id
