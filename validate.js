@@ -1,6 +1,6 @@
 // JavaScript Document
 /**
-* Plugin for easy form validations with js
+* Plugin for easy form validations with jquery
 * Author @ahmedali5530
 ***/
 (function ( $ ) {
@@ -28,15 +28,15 @@
 				if(f.attr('type') == 'checkbox'){
 					//check if it is checked or not
 					if(f.prop('checked')){
-						f.parent().children('#error-message').remove();
+						f.parent().children('.error-message').remove();
 						f.parent().removeClass('text-danger').addClass('text-success');
 					}else{
-						f.parent().children('#error-message').remove();
+						f.parent().children('.error-message').remove();
 						f.parent().css({'position':'relative'}).addClass('text-danger');
 						
 						
 						
-						f.after('<div class="error-message text-capital text-danger small" id="error-message" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' is required.</div>');
+						f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' is required.</div>');
 						
 						errors[k] = v.name;
 						
@@ -45,15 +45,15 @@
 				}
 				if(f.val() == ''){
 					//uses bootstrap's classes for errors
-					f.parent().children('#error-message').remove();
+					f.parent().children('.error-message').remove();
 					f.parent().css({'position':'relative'}).addClass('has-error');
 					
-					f.after('<div class="error-message text-capital text-danger small" id="error-message" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' is required.</div>');
+					f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' is required.</div>');
 					
 					errors[k] = v.name;
 					
 				}else{
-					f.parent().children('#error-message').remove();
+					f.parent().children('.error-message').remove();
 					f.parent().removeClass('has-error').removeClass('error').addClass('has-success');
 					//return true;
 				}
@@ -61,25 +61,56 @@
 			
 			if(f.hasClass('email')){
 				if(f.hasClass('required')){
-					
+                                    if(f.val() == ''){
+                                        
+                                    }else{
+					var pattern = new RegExp(/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i);
+                                        // alert( pattern.test(emailAddress) );
+                                        if(pattern.test(f.val()) == true){
+                                                f.parent().children('.error-message').remove();
+                                                f.parent().removeClass('has-error').removeClass('error').addClass('has-success');
+                                                //return true;
+                                        }else{
+                                                //uses bootstrap's classes for errors
+                                                f.parent().children('.error-message').remove();
+                                                f.parent().css({'position':'relative'}).addClass('has-error');
+
+                                                f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' must have a Valid Email Address.</div>');
+
+                                                errors[k] = v.name;
+                                        }
+                                    }
 				}else{
-					return true;
-				}
-				var pattern = new RegExp(/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i);
-				// alert( pattern.test(emailAddress) );
-				if(pattern.test(f.val()) == true){
-					f.parent().children('#error-message').remove();
-					f.parent().removeClass('has-error').removeClass('error').addClass('has-success');
 					//return true;
-				}else{
-					//uses bootstrap's classes for errors
-					f.parent().children('#error-message').remove();
-					f.parent().css({'position':'relative'}).addClass('has-error');
-					
-					f.after('<div class="error-message text-capital text-danger small" id="error-message" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' must have a Valid Email Address.</div>');
-					
-					errors[k] = v.name;
 				}
+				
+			}
+                        
+                        if(f.hasClass('number')){
+				if(f.hasClass('required')){
+                                    if(f.val() == ''){
+                                        
+                                    }else{
+                                        if($.isNumeric(f.val()) == true){
+                                                f.parent().children('.error-message').remove();
+                                                f.parent().removeClass('has-error').removeClass('error').addClass('has-success');
+                                                //return true;
+                                        }else{
+                                                //uses bootstrap's classes for errors
+                                                f.parent().children('.error-message').remove();
+                                                f.parent().css({'position':'relative'}).addClass('has-error');
+
+                                                f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' must be a valid Numeric Value.</div>');
+
+                                                errors[k] = v.name;
+                                        }
+                                    }
+				}else{  
+					//return true;
+                                        
+				}
+				
+				
 			}
 		});
 		
@@ -103,7 +134,7 @@
 		if(errors.length > 0){
 			errors.every(function(a){
 				$($(form)[0]['elements'][a]).focus();
-				$('.error-message').delay(5000).fadeOut(300);
+				$('.error-message').delay(10000).fadeOut(300);
 			});
 			return false;	
 		}else{
@@ -117,7 +148,6 @@
 /**
 * Working Method
 *
-* use 'required' and 'email' classes to validate your inputes.
 ***/
 /*
 //#b_form is the form id
