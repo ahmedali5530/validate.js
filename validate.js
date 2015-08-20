@@ -6,9 +6,11 @@
 (function ( $ ) {
     $.fn.validate = function(cb ) {
 		
-		//var form = document.forms[this.selector];
-		
-		var form = $(this).context;
+		if(typeof $(this)[0] === 'undefined'){
+			var form = $(this).context.elements;
+		}else{
+			var form = $(this)[0].elements;
+		}
 		
 		var errors = new Array();
 		
@@ -16,46 +18,13 @@
 		
 		
 		
-		$(form.elements).each(function(k,v){
+		$(form).each(function(k,v){
 			var f = $(v);
-			
-			if(typeof f.data('field') === 'undefined'){
+			if(typeof f.data('field') == 'undefined'){
 					var field = f.attr('name');
 			}else{
 					var field = f.data('field');
 			}
-			
-			if(typeof f.data('placement') === 'undefined'){
-				var message_placement = 'right';
-			}else{
-				var message_placement = f.data('placement');
-			}
-			
-			var css = {};
-			
-			switch(message_placement){
-				case('top'):
-				css = {bottom:'100%',left : '','text-align':'left',position:'absolute','z-index':'100',background:'#ffffff',border:'1px solid',padding:'5px',cursor:'pointer',width : '96%'};
-				break;
-				
-				case('bottom'):
-				css = {top : '100%',left : '','text-align':'left',position:'absolute','z-index':'100',background:'#ffffff',border:'1px solid',padding:'5px',cursor:'pointer',width : '96%',};
-				break;
-				
-				case('left'):
-				css = {right : '100%',top : '0px','text-align':'left',position:'absolute','z-index':'100',background:'#ffffff',border:'1px solid',padding:'5px',cursor:'pointer'};
-				break;
-				
-				case('right'):
-				css = {left : '100%',top : '0px','text-align':'left',position:'absolute','z-index':'100',background:'#ffffff',border:'1px solid',padding:'5px',cursor:'pointer'};
-				break;
-				
-				case('over'):
-				css = {top : '0px',left : '','text-align':'left',position:'absolute','z-index':'100',background:'#ffffff',border:'1px solid',padding:'5px',cursor:'pointer',width : '96%', height : '100%',};
-				break;
-			}
-			
-			//validation for required fields
 			if(f.hasClass('required')){
 				//check if this is a check box or not
 				if(f.attr('type') == 'checkbox'){
@@ -69,9 +38,7 @@
 						
 						
 						
-						f.after('<div class="error-message text-capital text-danger small">'+field+' is required.</div>');
-						
-						f.next('.error-message').css(css).attr('title','Click to Dismiss');
+						f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' is required.</div>');
 						
 						errors[k] = v.name;
 						
@@ -83,9 +50,7 @@
 					f.parent().children('.error-message').remove();
 					f.parent().css({'position':'relative'}).addClass('has-error');
 					
-					f.after('<div class="error-message text-capital text-danger small">'+field+' is required.</div>');
-					
-					f.next('.error-message').css(css).attr('title','Click to Dismiss');
+					f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' is required.</div>');
 					
 					errors[k] = v.name;
 					
@@ -96,7 +61,6 @@
 				}
 			}
 			
-			//validation for email address
 			if(f.hasClass('email')){
 				if(f.hasClass('required')){
 					if(f.val() == ''){
@@ -113,10 +77,8 @@
 								f.parent().children('.error-message').remove();
 								f.parent().css({'position':'relative'}).addClass('has-error');
 
-								f.after('<div class="error-message text-capital text-danger small">'+field+' must have a Valid Email Address.</div>');
-								
-								f.next('.error-message').css(css).attr('title','Click to Dismiss');
-								
+								f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' must have a Valid Email Address.</div>');
+
 								errors[k] = v.name;
 						}
 					}
@@ -125,8 +87,7 @@
 				}
 				
 			}
-            
-			//validation for numbers
+                        
             if(f.hasClass('number')){
 				if(f.hasClass('required')){
 					if(f.val() == ''){
@@ -141,10 +102,8 @@
 								f.parent().children('.error-message').remove();
 								f.parent().css({'position':'relative'}).addClass('has-error');
 
-								f.after('<div class="error-message text-capital text-danger small">'+field+' must be a valid Numeric Value.</div>');
+								f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' must be a valid Numeric Value.</div>');
 
-								f.next('.error-message').css(css).attr('title','Click to Dismiss');
-								
 								errors[k] = v.name;
 						}
 					}
@@ -152,39 +111,11 @@
 					//return true;
                                         
 				}
-			}
-			
-			//validation for alpha values
-			if(f.hasClass('alpha')){
-				if(f.hasClass('required')){
-					if(f.val() == ''){
-						
-					}else{
-						var pattern = new RegExp(/^[a-zA-Z]$/i);
-						//alert( pattern.test(f.val()) );
-						if(pattern.test(f.val()) == true){
-							f.parent().children('.error-message').remove();
-							f.parent().removeClass('has-error').removeClass('error').addClass('has-success');
-							//return true;
-						}else{
-							//uses bootstrap's classes for errors
-							f.parent().children('.error-message').remove();
-							f.parent().css({'position':'relative'}).addClass('has-error');
-
-							f.after('<div class="error-message text-capital text-danger small">'+field+' must have Valid Alpha values.</div>');
-
-							f.next('.error-message').css(css).attr('title','Click to Dismiss');
-							
-							errors[k] = v.name;
-						}
-					}
-				}
+				
+				
 			}
 		});
 		
-		
-		
-		//close the message and focus the field
 		$(document).on('click','.error-message',function(){
 			var message = $(this);
 			if(message.prev('.form-control').val() == ''){
@@ -194,18 +125,17 @@
 				message.hide();
 			}
 		});
-		
-        $('.error-message').hover(function(){
+                $('.error-message').hover(function(){
 			var message = $(this);
-            $('.error-message').css('z-index',999);
+                        $('.error-message').css('z-index',999);
 			message.css('z-index',1000);
 		},function(){
-            $('.error-message').css('z-index',999);
-        });
+                    $('.error-message').css('z-index',999);
+                });
 		
 		if(errors.length > 0){
 			errors.every(function(a){
-				$($(form)[0]['elements'][a]).focus();
+				$(form[a]).focus();
 				//$('.error-message').delay(10000).fadeOut(300);
 			});
 			return false;	
