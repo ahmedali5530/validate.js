@@ -11,7 +11,7 @@ use validator names as classes in your form fields.
 
 ## Settings
 use html5 custom data attributes for settings extra settings:
-### settings for minimum
+### minimum
 `data-min="2", data-min-message="custom error message in case of error"`
 
 ### maximum
