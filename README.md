@@ -20,7 +20,7 @@ use html5 custom data attributes for settings extra settings:
 #### matching one field to other field
 `class="match" data-field="id of matching field" data-match-message="custom error message in case of error"`
 
-#### equal validator
+#### equal
 `class="equal" data-equal="5" data-equal-message="custom error message in case of error"`
 
 #### lessthan 
