@@ -1,164 +1,241 @@
-// JavaScript Document
-/**
-* Plugin for easy form validations with jquery
-* Author @ahmedali5530
-***/
-(function ( $ ) {
-    $.fn.validate = function(cb ) {
-		
-		if(typeof $(this)[0] === 'undefined'){
-			var form = $(this).context.elements;
-		}else{
-			var form = $(this)[0].elements;
-		}
-		
-		var errors = new Array();
-		
-		//console.log($(form)[0]['elements']);
-		
-		
-		
-		$(form).each(function(k,v){
-			var f = $(v);
-			if(typeof f.data('field') == 'undefined'){
-					var field = f.attr('name');
-			}else{
-					var field = f.data('field');
-			}
-			if(f.hasClass('required')){
-				//check if this is a check box or not
-				if(f.attr('type') == 'checkbox'){
-					//check if it is checked or not
-					if(f.prop('checked')){
-						f.parent().children('.error-message').remove();
-						f.parent().removeClass('text-danger').addClass('text-success');
-					}else{
-						f.parent().children('.error-message').remove();
-						f.parent().css({'position':'relative'}).addClass('text-danger');
-						
-						
-						
-						f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' is required.</div>');
-						
-						errors[k] = v.name;
-						
-						return false;
-					}
-				}
-				if(f.val() == ''){
-					//uses bootstrap's classes for errors
-					f.parent().children('.error-message').remove();
-					f.parent().css({'position':'relative'}).addClass('has-error');
-					
-					f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' is required.</div>');
-					
-					errors[k] = v.name;
-					
-				}else{
-					f.parent().children('.error-message').remove();
-					f.parent().removeClass('has-error').removeClass('error').addClass('has-success');
-					//return true;
-				}
-			}
-			
-			if(f.hasClass('email')){
-				if(f.hasClass('required')){
-					if(f.val() == ''){
-						
-					}else{
-						var pattern = new RegExp(/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i);
-						// alert( pattern.test(emailAddress) );
-						if(pattern.test(f.val()) == true){
-								f.parent().children('.error-message').remove();
-								f.parent().removeClass('has-error').removeClass('error').addClass('has-success');
-								//return true;
-						}else{
-								//uses bootstrap's classes for errors
-								f.parent().children('.error-message').remove();
-								f.parent().css({'position':'relative'}).addClass('has-error');
+// init form validation plugin
+// $(document).on('submit','.ajax-form',function(e){
+//     e.preventDefault();
+//    $(this).validate(function(form){
+//       //console.log(form);
+//    },function(form, errors){
+//       console.log(errors);
+//    });
+// });
 
-								f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' must have a Valid Email Address.</div>');
+// validate on runtime
+// $(document).on('keyup blur change', '.invalid', function(e){
+//                 //e.preventDefault();
+//                 //checking for validations
+//     var validate = new Validate($(this).closest('form'));
+//     validate._execute();
+//     validate._renderErrors();
+//     validate._prepare();
+// });
 
-								errors[k] = v.name;
-						}
-					}
-				}else{
-					//return true;
-				}
-				
-			}
-                        
-            if(f.hasClass('number')){
-				if(f.hasClass('required')){
-					if(f.val() == ''){
-						
-					}else{
-						if($.isNumeric(f.val()) == true){
-								f.parent().children('.error-message').remove();
-								f.parent().removeClass('has-error').removeClass('error').addClass('has-success');
-								//return true;
-						}else{
-								//uses bootstrap's classes for errors
-								f.parent().children('.error-message').remove();
-								f.parent().css({'position':'relative'}).addClass('has-error');
+function Validate(element, success, failure){
+    this.element = element;
+    this.success = success;
+    this.failure = failure;
+    this.errors = [];
+}
 
-								f.after('<div class="error-message text-capital text-danger small" style="text-align:left;position:absolute;left:100%;top:0px;z-index:100;background:#ffffff;border:1px solid;padding:5px;cursor:pointer;">'+field+' must be a valid Numeric Value.</div>');
+Validate.prototype = {
+    element : false, 
+    success : false, 
+    failure : false,
+    errorPosition : 'bottom',
+    validators : ['required', 'number', 'email','url', 'min', 'max', 'match', 'equal','lessthan','greaterthan','unique', 'ip', 'file', 'decimal', 'alpha', 'alphanumeric'],
+    init : function(){
+        //prepare the form for validation
+        //execute validation process
+        this._execute();
+        
+        //render error messages
+        this._renderErrors();
 
-								errors[k] = v.name;
-						}
-					}
-				}else{  
-					//return true;
-                                        
-				}
-				
-				
-			}
-		});
-		
-		$(document).on('click','.error-message',function(){
-			var message = $(this);
-			if(message.prev('.form-control').val() == ''){
-				message.prev('.form-control').focus();
-				message.hide();
-			}else{
-				message.hide();
-			}
-		});
-                $('.error-message').hover(function(){
-			var message = $(this);
-                        $('.error-message').css('z-index',999);
-			message.css('z-index',1000);
-		},function(){
-                    $('.error-message').css('z-index',999);
+        //1- disable submit button
+        this._prepare();
+        
+        //live validation
+//         this._liveValidate();
+        
+        
+        //focus first invalid field
+        this._highlightInvalidField();
+
+        //success callback
+        if(typeof this.success === 'function'){
+            this.success(this.element);
+        }
+        
+        //failure callback
+        if(typeof this.failure === 'function'){
+            this.failure(this.element, this.errors);
+        }
+    }, 
+    validationRules : {
+        required : function(field, vlt){
+            
+            //check if this is checkbox
+            if(field.attr('type') === 'checkbox'){
+                if(field.is(':checked')){
+                    //is checked
+                }else{
+                    return vlt._buildMessage(field, 'required', ' must be checked');
+                }
+            }else if(field.attr('type') === 'radio'){
+                //for radios
+                if($('input[name='+field.attr('name')+']:checked', vlt.element).length <= 0){
+                    return vlt._buildMessage(field, 'required', ' must have one value to check');
+                }
+            }else{
+                if($.trim(field.val()) === ''){
+                    return vlt._buildMessage(field, 'required', ' is required');
+                }
+            }
+            
+        }, 
+        number : function(field, vlt){
+            if($.isNumeric(field.val()) === false){
+                return vlt._buildMessage(field, 'number',' must be a number');
+            }
+        }, 
+        email : function(field, vlt){
+            var pattern = new RegExp(/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i);
+            if(pattern.test(field.val()) === false){
+                return vlt._buildMessage(field, 'email',' must be a valid email');
+            }
+        }, 
+        url : function(field,vlt){
+            var urlregex = /^(https?|ftp):\/\/([a-zA-Z0-9.-]+(:[a-zA-Z0-9.&%$-]+)*@)*((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|pk|in|[a-zA-Z]{2}))(:[0-9]+)*(\/($|[a-zA-Z0-9.,?'\\+&%$#=~_-]+))*$/;
+            if(urlregex.test(field.val()) === false){
+                return vlt._buildMessage(field, 'email',' must be a valid URL');
+            }
+        },
+        min : function(field, vlt){
+            var length = field.val();
+            if(length.length < field.data('min')){
+                return vlt._buildMessage(field, 'min', ' must be minimum to '+field.data('min'));
+            }
+        }, 
+        max : function(field, vlt){
+            var length = field.val();
+            if(length.length > field.data('max')){
+                return vlt._buildMessage(field, 'max', ' must be maximum to '+field.data('max'));
+            }
+        }, 
+        match : function(field, vlt){
+            if(field.val() !== $('#'+field.data('field'), vlt.element).val()){
+                return vlt._buildMessage(field, 'match', ' must match with '+field.data('field'));
+            }
+        }, 
+        equal : function(field, vlt){
+            if(field.val() !== field.data('equal')){
+                return vlt._buildMessage(field, 'equal', ' must be equal to '+field.data('equal'));
+            }
+        }, 
+        lessthan : function(field, vlt){
+            if(field.val() > field.data('less-than')){
+                return vlt._buildMessage(field, 'less-than', ' must be less than '+field.data('less-than'));
+            }
+        }, 
+        greaterthan : function(field, vlt){
+            if(field.val() < field.data('greater-than')){
+                return vlt._buildMessage(field, 'greater-than', ' must be greater than '+field.data('greater-than'));
+            }
+        },
+        unique : function(field, vlt){
+            //check if a value is unique, checking from database
+        },
+        ip : function(field, vlt){
+            //check for valid ip address
+        },
+        file : function(field, vlt){
+            //check the filetype of uploaded file
+        }, 
+        decimal : function(field, vlt){
+            //check is the value decimal
+        }, 
+        alpha : function(field, vlt){
+            //check if the value is aplha
+        }, 
+        alphanumeric : function(field, vlt){
+            //check if the value is mix of alpha and numeric chars
+        }
+    },
+    _buildMessage : function(field, type, defaultMessage){
+        if(typeof field.data(type+'-message') === 'undefined'){
+            return field.attr('name')+defaultMessage;
+        }else{
+            return field.data(type+'-message');
+        }
+    },
+    _execute : function(){
+        var vlt = this;
+        
+        $.each(this.element, function(k, v){
+            $.each(v, function(i, field){
+                //loop all available validators
+                vlt.validators.forEach(function(validation){
+                    if($(field).hasClass(validation)){
+                        var validationProcess = vlt.validationRules[validation]($(field), vlt);
+                        if(typeof validationProcess !== 'undefined'){
+                            //vlt.errors[$(field).attr('name')] = [];
+                            vlt.errors[$(field).attr('name')] = [validationProcess];
+                        }
+                    }
                 });
-		
-		if(errors.length > 0){
-			errors.every(function(a){
-				$(form[a]).focus();
-				//$('.error-message').delay(10000).fadeOut(300);
-			});
-			return false;	
-		}else{
-			return true;
-		}
-	};
-}( jQuery ));
+            });
+        });
+        
+        return this;
+    },
+    _renderErrors : function(){
+        var vlt = this;
 
-/****************plugin Ends***************/
+        $.each(this.element, function(k, v){
+            $.each(v, function(i, field){
+                //loop all errors
+                vlt.validators.forEach(function(validation){
+                    if($(field).hasClass(validation)){
+                        if(vlt.errors.hasOwnProperty($(field).attr('name'))){
+                            var errorObject = vlt.errors[$(field).attr('name')];
+                            var errorPosition = typeof $(field).data('error-position') === 'undefined' ? vlt.errorPosition : $(field).data('error-position');
+                            //delete any old message
+                            $(field).closest('.form-group, .checkbox, .radio').find('.error-message').remove();
+                            //add new message
+                            $(field).closest('.form-group, .checkbox, .radio').append('<div class="error-message text-danger '+errorPosition+'">'+errorObject.toString()+'</div>');
+                            $(field).closest('.form-group, .checkbox, .radio').addClass('has-error');
+                            $(field).addClass('invalid');
+                        }else{
+                            $(field).closest('.form-group, .checkbox, .radio').find('.error-message').remove();
+                            $(field).closest('.form-group, .checkbox, .radio').removeClass('has-error').addClass('has-success');
+                            $(field).removeClass('invalid');
+                        }
+                    }
+                });
+            });
+        });
+        
+        //message click handler
+        $(document).on('click','.error-message', function(e){
+            e.preventDefault();
+            $(this).prev().focus();
+        });
+        
+        return this;
+    }, 
+    _prepare : function(){
+        console.log(Object.keys(this.errors).length);
+        if(Object.keys(this.errors).length >= 1){
+            $(this.element).find('#submit').attr('disabled','disabled');
+        }else{
+            $(this.element).find('#submit').removeAttr('disabled');
+        }
+    },
+    _liveValidate : function(){
+        var vlt = this;
+        if($(this.element).find('#submit').is(':disabled')){
+            
+        }
+    }, 
+    _highlightInvalidField : function(){
+        //focus in first invalid field
+        var invalidFields = $(this.element).find('.has-error').children('input, select, checkbox, radio');
+        if(invalidFields.length > 0){
+            invalidFields[0].focus();
+        }
+    }
+};
 
-/**
-* Working Method
-*
-***/
-/*
-//#b_form is the form id
-$(document).on('submit','#b_form',function(e){
-		e.preventDefault();
-		//b_form is the form name
-		if($('b_form').validate()){
-			//your success function will be called here
-			//yourSuccessCallBack();
-		}
-	});
-*/
+//create plugin to interact with forms easily
+$.fn.validate = function(success, failure){
+    var validate = new Validate($(this), success, failure);
+    return validate.init();
+}
