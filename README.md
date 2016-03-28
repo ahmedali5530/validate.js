@@ -11,22 +11,22 @@ use validator names as classes in your form fields.
 
 ## Settings
 use html5 custom data attributes for settings extra settings:
-### minimum
+#### minimum
 `class="min" data-min="2" data-min-message="custom error message in case of error"`
 
-### maximum
+#### maximum
 `class="max" data-max="5" data-max-message="custom error message in case of error"`
 
-### matching one field to other field
+#### matching one field to other field
 `class="match" data-field="id of matching field" data-match-message="custom error message in case of error"`
 
-### equal validator
+#### equal validator
 `class="equal" data-equal="5" data-equal-message="custom error message in case of error"`
 
-### lessthan 
+#### lessthan 
 `class="lessthan" data-less-than="50" data-less-than-message="custom error message in case of error"`
 
-### greaterthan
+#### greaterthan
 `class="greaterthan" data-greater-than="5" data-greater-than-message="custom error message in case of error"`
 
 
