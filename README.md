@@ -32,9 +32,12 @@ use html5 custom data attributes for settings extra settings:
 
 ## Plugin initialization
 ```
-$('some_form_selector').validate(function(form){
-  //success callback
-},function(form, errors){
-  //failure callback
+$(document).on('submit','form',function(e){
+    e.preventDefault();
+    $(this).validate(function(form){
+      //console.log(form);
+    },function(form, errors){
+       console.log(errors);
+    });
 });
 ```
