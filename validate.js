@@ -1,22 +1,12 @@
-// init form validation plugin
-// $(document).on('submit','.ajax-form',function(e){
-//     e.preventDefault();
-//    $(this).validate(function(form){
-//       //console.log(form);
-//    },function(form, errors){
-//       console.log(errors);
-//    });
-// });
-
-// validate on runtime
-// $(document).on('keyup blur change', '.invalid', function(e){
-//                 //e.preventDefault();
-//                 //checking for validations
-//     var validate = new Validate($(this).closest('form'));
-//     validate._execute();
-//     validate._renderErrors();
-//     validate._prepare();
-// });
+//for live validation
+$(document).on('keydown blur change', '.invalid, .valid', function(e){
+    //e.preventDefault();
+    //checking for validations
+    var validate = new Validate($(this).closest('form'));
+    validate._execute();
+    validate._renderErrors();
+    validate._prepare();
+});
 
 function Validate(element, success, failure){
     this.element = element;
@@ -50,9 +40,15 @@ Validate.prototype = {
         this._highlightInvalidField();
 
         //success callback
-        if(typeof this.success === 'function'){
-            this.success(this.element);
+        console.log(this.errors);
+        if(Object.keys(this.errors).length <= 0){
+
+            //$(this.element).find('#submit').attr('disabled','disabled');
+            if(typeof this.success === 'function'){
+                this.success(this.element);
+            }
         }
+        
         
         //failure callback
         if(typeof this.failure === 'function'){
@@ -192,11 +188,11 @@ Validate.prototype = {
                             //add new message
                             $(field).closest('.form-group, .checkbox, .radio').append('<div class="error-message text-danger '+errorPosition+'">'+errorObject.toString()+'</div>');
                             $(field).closest('.form-group, .checkbox, .radio').addClass('has-error');
-                            $(field).addClass('invalid');
+                            $(field).addClass('invalid').removeClass('valid');
                         }else{
                             $(field).closest('.form-group, .checkbox, .radio').find('.error-message').remove();
                             $(field).closest('.form-group, .checkbox, .radio').removeClass('has-error').addClass('has-success');
-                            $(field).removeClass('invalid');
+                            $(field).removeClass('invalid').addClass('valid');
                         }
                     }
                 });
@@ -212,7 +208,7 @@ Validate.prototype = {
         return this;
     }, 
     _prepare : function(){
-        console.log(Object.keys(this.errors).length);
+       
         if(Object.keys(this.errors).length >= 1){
             $(this.element).find('#submit').attr('disabled','disabled');
         }else{
