@@ -3,9 +3,9 @@ $(document).on('keydown blur change', '.invalid, .valid', function(e){
     //e.preventDefault();
     //checking for validations
     var validate = new Validate($(this).closest('form'));
-    validate._execute();
-    validate._renderErrors();
-//    validate._prepare();
+    validate.execute();
+    validate.renderErrors();
+//    validate.prepare();
 });
 
 function Validate(element, success, failure){
@@ -26,20 +26,20 @@ Validate.prototype = {
 
         //prepare the form for validation
         //execute validation process
-        this._execute();
+        this.execute();
         
         //render error messages
-        this._renderErrors();
+        this.renderErrors();
 
         //1- disable submit button
-//        this._prepare();
+//        this.prepare();
         
         //live validation
-//         this._liveValidate();
+//         this.liveValidate();
         
         
         //focus first invalid field
-        this._highlightFirstInvalidField();
+        this.highlightFirstInvalidField();
 
         //success callback
         if(this.hasErrors() == false){
@@ -65,67 +65,67 @@ Validate.prototype = {
                 if(field.is(':checked')){
                     //is checked
                 }else{
-                    return vlt._buildMessage(field, 'required', ' must be checked');
+                    return vlt.buildMessage(field, 'required', ' must be checked');
                 }
             }else if(field.attr('type') === 'radio'){
                 //for radios
                 if($('input[name='+field.attr('name')+']:checked', vlt.element).length <= 0){
-                    return vlt._buildMessage(field, 'required', ' must have one value to check');
+                    return vlt.buildMessage(field, 'required', ' must have one value to check');
                 }
             }else{
                 if($.trim(field.val()) === ''){
-                    return vlt._buildMessage(field, 'required', ' is required');
+                    return vlt.buildMessage(field, 'required', ' is required');
                 }
             }
             
         }, 
         number : function(field, vlt){
             if($.isNumeric(field.val()) === false){
-                return vlt._buildMessage(field, 'number',' must be a number');
+                return vlt.buildMessage(field, 'number',' must be a number');
             }
         }, 
         email : function(field, vlt){
             var pattern = new RegExp(/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i);
             if(pattern.test(field.val()) === false){
-                return vlt._buildMessage(field, 'email',' must be a valid email');
+                return vlt.buildMessage(field, 'email',' must be a valid email');
             }
         }, 
         url : function(field,vlt){
             var urlregex = /^(https?|ftp):\/\/([a-zA-Z0-9.-]+(:[a-zA-Z0-9.&%$-]+)*@)*((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|pk|in|[a-zA-Z]{2}))(:[0-9]+)*(\/($|[a-zA-Z0-9.,?'\\+&%$#=~_-]+))*$/;
             if(urlregex.test(field.val()) === false){
-                return vlt._buildMessage(field, 'email',' must be a valid URL');
+                return vlt.buildMessage(field, 'email',' must be a valid URL');
             }
         },
         min : function(field, vlt){
             var length = field.val();
             if(length.length < field.data('min')){
-                return vlt._buildMessage(field, 'min', ' must be minimum to '+field.data('min'));
+                return vlt.buildMessage(field, 'min', ' must be minimum to '+field.data('min'));
             }
         }, 
         max : function(field, vlt){
             var length = field.val();
             if(length.length > field.data('max')){
-                return vlt._buildMessage(field, 'max', ' must be maximum to '+field.data('max'));
+                return vlt.buildMessage(field, 'max', ' must be maximum to '+field.data('max'));
             }
         }, 
         match : function(field, vlt){
             if(field.val() !== $('#'+field.data('field'), vlt.element).val()){
-                return vlt._buildMessage(field, 'match', ' must match with '+field.data('field'));
+                return vlt.buildMessage(field, 'match', ' must match with '+field.data('field'));
             }
         }, 
         equal : function(field, vlt){
             if(field.val() !== field.data('equal')){
-                return vlt._buildMessage(field, 'equal', ' must be equal to '+field.data('equal'));
+                return vlt.buildMessage(field, 'equal', ' must be equal to '+field.data('equal'));
             }
         }, 
         lessthan : function(field, vlt){
             if(field.val() > field.data('less-than')){
-                return vlt._buildMessage(field, 'less-than', ' must be less than '+field.data('less-than'));
+                return vlt.buildMessage(field, 'less-than', ' must be less than '+field.data('less-than'));
             }
         }, 
         greaterthan : function(field, vlt){
             if(field.val() < field.data('greater-than')){
-                return vlt._buildMessage(field, 'greater-than', ' must be greater than '+field.data('greater-than'));
+                return vlt.buildMessage(field, 'greater-than', ' must be greater than '+field.data('greater-than'));
             }
         },
         unique : function(field, vlt){
@@ -151,7 +151,7 @@ Validate.prototype = {
             });
 
             if(status === false){
-                return vlt._buildMessage(field, 'unique', ' "' +field.val()+'" already exists');
+                return vlt.buildMessage(field, 'unique', ' "' +field.val()+'" already exists');
             }
             
             
@@ -172,14 +172,14 @@ Validate.prototype = {
             //check if the value is mix of alpha and numeric chars
         }
     },
-    _buildMessage : function(field, type, defaultMessage){
+    buildMessage : function(field, type, defaultMessage){
         if(typeof field.data(type+'-message') === 'undefined'){
             return field.attr('name')+defaultMessage;
         }else{
             return field.data(type+'-message');
         }
     },
-    _execute : function(){
+    execute : function(){
         var vlt = this;
         
         $.each(this.element, function(k, v){
@@ -199,7 +199,7 @@ Validate.prototype = {
         
         return this;
     },
-    _renderErrors : function(){
+    renderErrors : function(){
         var vlt = this;
 
         //clear all errors prior to add new errors
@@ -247,7 +247,7 @@ Validate.prototype = {
         //remove stylings
         $(this.element).find('.invalid').closest('.has-error').removeClass('has-error');
     },
-    _prepare : function(){
+    prepare : function(){
        
         if(Object.keys(this.errors).length >= 1){
             $(this.element).find('#submit').attr('disabled','disabled');
@@ -255,13 +255,13 @@ Validate.prototype = {
             $(this.element).find('#submit').removeAttr('disabled');
         }
     },
-    _liveValidate : function(){
+    liveValidate : function(){
         var vlt = this;
         if($(this.element).find('#submit').is(':disabled')){
             
         }
     }, 
-    _highlightFirstInvalidField : function(){
+    highlightFirstInvalidField : function(){
         //focus in first invalid field
         var invalidFields = $(this.element).find('.has-error').children('input, select, checkbox, radio');
         if(invalidFields.length > 0){
