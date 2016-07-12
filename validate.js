@@ -202,6 +202,9 @@ Validate.prototype = {
     _renderErrors : function(){
         var vlt = this;
 
+        //clear all errors prior to add new errors
+        this.clearErrors();
+
         $.each(this.element, function(k, v){
             $.each(v, function(i, field){
                 //loop all errors
@@ -216,10 +219,6 @@ Validate.prototype = {
                             $(field).closest('.form-group, .checkbox, .radio').append('<div class="error-message text-danger '+errorPosition+'">'+errorObject.toString()+'</div>');
                             $(field).closest('.form-group, .checkbox, .radio').removeClass('has-success').addClass('has-error');
                             $(field).addClass('invalid').removeClass('valid');
-                        }else{
-                            $(field).closest('.form-group, .checkbox, .radio').find('.error-message').remove();
-                            $(field).closest('.form-group, .checkbox, .radio').removeClass('has-error');
-                            $(field).removeClass('invalid').addClass('valid');
                         }
                     }
                 });
@@ -240,6 +239,13 @@ Validate.prototype = {
         }
 
         return false;
+    },
+    clearErrors : function(){
+        //remove error messages
+        $(this.element).find('.error-message').remove();
+        
+        //remove stylings
+        $(this.element).find('.invalid').closest('.has-error').removeClass('has-error');
     },
     _prepare : function(){
        
