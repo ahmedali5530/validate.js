@@ -5,7 +5,7 @@ $(document).on('keydown blur change', '.invalid, .valid', function(e){
     var validate = new Validate($(this).closest('form'));
     validate._execute();
     validate._renderErrors();
-    validate._prepare();
+//    validate._prepare();
 });
 
 function Validate(element, success, failure){
@@ -22,6 +22,8 @@ Validate.prototype = {
     errorPosition : 'bottom',
     validators : ['required', 'number', 'email','url', 'min', 'max', 'match', 'equal','lessthan','greaterthan','unique', 'ip', 'file', 'decimal', 'alpha', 'alphanumeric'],
     init : function(){
+
+
         //prepare the form for validation
         //execute validation process
         this._execute();
@@ -30,29 +32,29 @@ Validate.prototype = {
         this._renderErrors();
 
         //1- disable submit button
-        this._prepare();
+//        this._prepare();
         
         //live validation
 //         this._liveValidate();
         
         
         //focus first invalid field
-        this._highlightInvalidField();
+        this._highlightFirstInvalidField();
 
         //success callback
-        console.log(this.errors);
-        if(Object.keys(this.errors).length <= 0){
-
+        if(this.hasErrors() == false){
             //$(this.element).find('#submit').attr('disabled','disabled');
             if(typeof this.success === 'function'){
                 this.success(this.element);
             }
         }
         
-        
         //failure callback
-        if(typeof this.failure === 'function'){
-            this.failure(this.element, this.errors);
+        if(this.hasErrors() == true){
+            if(typeof this.failure === 'function'){
+            
+                this.failure(this.element, this.errors);
+            }
         }
     }, 
     validationRules : {
@@ -128,6 +130,31 @@ Validate.prototype = {
         },
         unique : function(field, vlt){
             //check if a value is unique, checking from database
+            var message = field.attr('name')+ ' "' +field.val()+'" already exists';
+            var status;
+            $.ajax({
+                url : field.data('url'),
+                method : field.data('method') || 'get',
+                dataType : 'json',
+                data : {term: field.val()},
+                //async : false,
+                contentType : 'application/x-www-form-urlencoded',
+				processData : true,
+                success : function(r){
+                    if(typeof callback === 'function'){
+                        callback(r);
+                    }
+                },
+                complete : function(r){
+                    status = JSON.parse(r.responseText);
+                }
+            });
+
+            if(status === false){
+                return vlt._buildMessage(field, 'unique', ' "' +field.val()+'" already exists');
+            }
+            
+            
         },
         ip : function(field, vlt){
             //check for valid ip address
@@ -187,11 +214,11 @@ Validate.prototype = {
                             $(field).closest('.form-group, .checkbox, .radio').find('.error-message').remove();
                             //add new message
                             $(field).closest('.form-group, .checkbox, .radio').append('<div class="error-message text-danger '+errorPosition+'">'+errorObject.toString()+'</div>');
-                            $(field).closest('.form-group, .checkbox, .radio').addClass('has-error');
+                            $(field).closest('.form-group, .checkbox, .radio').removeClass('has-success').addClass('has-error');
                             $(field).addClass('invalid').removeClass('valid');
                         }else{
                             $(field).closest('.form-group, .checkbox, .radio').find('.error-message').remove();
-                            $(field).closest('.form-group, .checkbox, .radio').removeClass('has-error').addClass('has-success');
+                            $(field).closest('.form-group, .checkbox, .radio').removeClass('has-error');
                             $(field).removeClass('invalid').addClass('valid');
                         }
                     }
@@ -207,6 +234,13 @@ Validate.prototype = {
         
         return this;
     }, 
+    hasErrors : function(){
+        if(Object.keys(this.errors).length >= 1){
+            return true;
+        }
+
+        return false;
+    },
     _prepare : function(){
        
         if(Object.keys(this.errors).length >= 1){
@@ -221,7 +255,7 @@ Validate.prototype = {
             
         }
     }, 
-    _highlightInvalidField : function(){
+    _highlightFirstInvalidField : function(){
         //focus in first invalid field
         var invalidFields = $(this.element).find('.has-error').children('input, select, checkbox, radio');
         if(invalidFields.length > 0){
