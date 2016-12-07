@@ -1,3 +1,4 @@
+//Author: Ahmed Ali
 //for live validation
 $(document).on('keydown blur change', '.invalid, .valid', function(e){
     //e.preventDefault();
@@ -7,6 +8,7 @@ $(document).on('keydown blur change', '.invalid, .valid', function(e){
     validate.renderErrors();
 //    validate.prepare();
 });
+
 
 function Validate(element, success, failure){
     this.element = element;
